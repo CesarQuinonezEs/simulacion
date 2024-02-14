@@ -19,8 +19,10 @@ while(flag):
     print("probabilidad de 3: ", a3/n)
     listPie = [a0,a1,a2,a3]
     nom = ["0","1","2","3"]
-    plt.pie(listPie,labels=nom)
+    plt.title("Distribucion no uniforme")
+    plt.pie(listPie,labels=nom,autopct="%0.1f %%")
     fig, ax = plt.subplots()
+    ax.set_title("Distribucion no uniforme")
     ax.hist(listR)
     plt.show()
     opc = input("Quieres volver a girarlo ? \n")
