@@ -21,7 +21,7 @@ def update_pendulum(mass, length, theta_0, gravity):
     
     # Condiciones iniciales
     theta0 = np.radians(theta_0)  # Ángulo inicial en radianes
-    omega0 = 0.0           # Velocidad angular inicial
+    omega0 = 0.0          # Velocidad angular inicial
     state0 = [theta0, omega0]
 
     # Tiempo de integración
@@ -29,6 +29,7 @@ def update_pendulum(mass, length, theta_0, gravity):
 
     # Resolver la ecuación diferencial
     states = odeint(pendulum_equations, state0, t, args=(L, g, b))
+    print(states)
     theta = states[:, 0]
 
     # Actualizar la animación
@@ -42,7 +43,7 @@ def update_pendulum(mass, length, theta_0, gravity):
         plt.gca().set_aspect('equal', adjustable='box')
         plt.xlabel('Posición en x')
         plt.ylabel('Posición en y')
-        plt.title('Animación de un péndulo')
+        plt.title('Simulacion de un pendulo')
 
     # Crear la animación
     fig = plt.figure()
