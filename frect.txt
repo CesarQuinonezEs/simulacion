@@ -1,0 +1,20 @@
+Frecuencia en la que gana el jugador 1:  167 
+Frecuencia en la que gana el jugador 2:  171
+Frecuencia en la que hay empate:  162
+Media en los resultados de cada juego:  166.66666666666666
+La varianza de los resultados es:  21.77777777777769
+La desviacion estandar de los resultados es:  4.666666666666657
+Para el jugador 1 -----------------------------------------------------------------------------
+Frecuencia en la que el jugador 1 tiene piedra:  164
+Frecuencia en la que el jugador 1 tiene papel:  180
+Frecuencia en la que el jugador 1 tiene tijeras: 156
+Media en las opciones jugadas por el jugador 1:  166.66666666666666
+La varianza de las opciones jugadas por el jugador 1:  99.55555555555554
+La desviacion estandar de las opciones jugadas por el jugador 1:  9.977753031397176
+Para el jugador 2 -----------------------------------------------------------------------------
+Frecuencia en la que el jugador 2 tiene piedra:  180
+Frecuencia en la que el jugador 2 tiene papel:  162
+Frecuencia en la que el jugador 2 tiene tijeras: 158
+Media en las opciones jugadas por el jugador 2:  166.66666666666666
+La varianza de las opciones jugadas por el jugador 2:  91.55555555555554
+La desviacion estandar de las opciones jugadas por el jugador 2:  9.568466729604882
