@@ -11,12 +11,14 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
         
 
 class Flower(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, name):
         super().__init__()
         self.image = pygame.image.load("flor.png").convert()
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.wasPolin = False
+        self.isTaked = False
+        self.name = name
 
     def setRandomFlower(self):
         #220490430623
@@ -32,28 +34,48 @@ class Flower(pygame.sprite.Sprite):
             self.wasPolin = True
 
 class Bee(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self,name):
         super().__init__()
         self.image = pygame.image.load("abeja.png").convert()
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
-    
-    def findFlower(self, flower:Flower):
-        print(flower.rect.x)
-        if self.rect.x == flower.rect.x:
-            self.rect.x = self.rect.x
-        elif self.rect.x < flower.rect.x:
+        self.isPoli = False
+        self.name = name
+        self.flowerSelect = None
+    def changeIsPoli(self):
+        if self.isPoli:
+            self.isPoli = False
+        else:
+            self.isPoli = True
+    def getIsPoli(self):
+        return self.isPoli
+            
+    def findAFlower(self,flower:Flower):
+        
+        if self.rect.x < flower.rect.x:
             self.rect.x += 1
         elif self.rect.x > flower.rect.x:
             self.rect.x -= 1
-
-        if self.rect.y == flower.rect.y:
-            self.rect.y = self.rect.y
-        elif self.rect.y < flower.rect.y:
+        
+        if self.rect.y < flower.rect.y:
             self.rect.y += 1
         elif self.rect.y > flower.rect.y:
             self.rect.y -= 1
-
+    
+    def moveToCor(self, x:int, y:int):
+        
+        if self.rect.x < x:
+            self.rect.x += 1
+        elif self.rect.x > x:   
+            self.rect.x -= 1
+        
+        if self.rect.y < y:
+            self.rect.y += 1
+        elif self.rect.y > y:
+            self.rect.y -= 1
+          
+        
+        
 def main():
     pygame.init()
     size = (800,500)
@@ -63,29 +85,71 @@ def main():
     panal_img = pygame.image.load('panal.png').convert()
     panal_img.set_colorkey([0,0,0])
     running = True
-    flower_list = pygame.sprite.Group()
+    flower_list = []
     all_sprites = pygame.sprite.Group()
-    for i in range(5):
-        flower = Flower()
-        flower.setRandomFlower()
-        flower_list.add(flower)
-        all_sprites.add(flower)
+    bees_list = []
     
-    bee = Bee()
-    all_sprites.add(bee)
+    for i in range(5):
+        flower = Flower(name=i)
+        flower.setRandomFlower()
+        flower_list.append(flower)
+        all_sprites.add(flower)
+    for i in range(3):
+        bee = Bee(name=i)
+        bee.rect.x = 190
+        bee.rect.y = 50
+        bees_list.append(bee)
+        all_sprites.add(bee)
     
     while running:
         for event in pygame.event.get():
             print(event)
             if event.type == pygame.QUIT:
                 running = False
-        
-        bee.rect.x = 190
-        bee.rect.y = 50
-        bee.findFlower(flower=flower)
-        
-        all_sprites.update()
-        #Color de fondo
+        aux = True 
+        for f in flower_list:
+            if not f.wasPolin:
+                for b in bees_list:
+                    if not b.isPoli:
+                        if b.flowerSelect is not None:
+                            if b.flowerSelect == f.name:
+                                if b.rect.x == f.rect.x and b.rect.y == f.rect.y:
+                                    b.isPoli = True
+                                    f.wasPolin = True
+                                else:
+                                    b.findAFlower(f)
+                        else:
+                            if not f.isTaked:
+                                b.flowerSelect = f.name
+                                f.isTaked = True
+                    else:
+                        if b.rect.x == 190 and b.rect.y == 50:
+                            b.isPoli = False
+                        else:
+                            b.moveToCor(x=190,y=50)
+        """
+        for b in bees_list:
+            if not b.isPoli:
+                for f in flower_list:
+                    if not f.wasPolin:
+                        if b.flowerSelect is not None:
+                            if b.flowerSelect == f.name:
+                                if b.rect.x == f.rect.x and b.rect.y == f.rect.y:
+                                    b.isPoli = True
+                                    f.wasPolin = True
+                                else:
+                                    b.findAFlower(f)
+                        else:
+                            if not f.isTaked:
+                              b.flowerSelect = f.name
+                              f.isTaked = True
+            else:
+                if b.rect.x == 190 and b.rect.y == 50:
+                    b.isPoli = False
+                else:
+                    b.moveToCor(x=190,y=50)
+                """
+                        
         screen.fill((255,255,255))
 
         screen.blit(background_img, [0,0])
