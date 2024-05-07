@@ -108,6 +108,7 @@ def main():
                 running = False
         aux = True 
         for f in flower_list:
+            
             if not f.wasPolin:
                 for b in bees_list:
                     if not b.isPoli:
@@ -122,33 +123,14 @@ def main():
                             if not f.isTaked:
                                 b.flowerSelect = f.name
                                 f.isTaked = True
+                            
                     else:
+                        print("Abeja ya polinizo")
                         if b.rect.x == 190 and b.rect.y == 50:
                             b.isPoli = False
+                            b.flowerSelect = None
                         else:
                             b.moveToCor(x=190,y=50)
-        """
-        for b in bees_list:
-            if not b.isPoli:
-                for f in flower_list:
-                    if not f.wasPolin:
-                        if b.flowerSelect is not None:
-                            if b.flowerSelect == f.name:
-                                if b.rect.x == f.rect.x and b.rect.y == f.rect.y:
-                                    b.isPoli = True
-                                    f.wasPolin = True
-                                else:
-                                    b.findAFlower(f)
-                        else:
-                            if not f.isTaked:
-                              b.flowerSelect = f.name
-                              f.isTaked = True
-            else:
-                if b.rect.x == 190 and b.rect.y == 50:
-                    b.isPoli = False
-                else:
-                    b.moveToCor(x=190,y=50)
-                """
                         
         screen.fill((255,255,255))
 
