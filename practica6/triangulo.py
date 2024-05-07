@@ -23,7 +23,7 @@ def update(frame):
     sierpinski_triangle(ax, depth, (0, 0), (1, 0), (0.5, np.sqrt(3)/2))
 
 # Configuración inicial
-max_depth = 8
+max_depth = 16
 
 fig, ax = plt.subplots()
 ax.axis('equal')
