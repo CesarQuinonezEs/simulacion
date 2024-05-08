@@ -6,9 +6,7 @@ import random
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-
-        
+       
 
 class Flower(pygame.sprite.Sprite):
     def __init__(self, name):
@@ -74,7 +72,39 @@ class Bee(pygame.sprite.Sprite):
         elif self.rect.y > y:
             self.rect.y -= 1
           
-        
+
+def beesPoliAnimation(flower_list, bees_list):
+    for f in flower_list:
+            if not f.wasPolin:
+                for b in bees_list:
+                    if not b.isPoli:
+                        if b.flowerSelect is not None:
+                            if b.flowerSelect == f.name:
+                                if b.rect.x == f.rect.x and b.rect.y == f.rect.y:
+                                    b.isPoli = True
+                                    f.wasPolin = True
+                                else:
+                                    b.findAFlower(f)
+                        else:
+                            if not f.isTaked:
+                                b.flowerSelect = f.name
+                                f.isTaked = True
+                            
+                    else:
+                        if b.rect.x == 190 and b.rect.y == 50:
+                            b.isPoli = False
+                            b.flowerSelect = None
+                        else:
+                            b.moveToCor(x=190,y=50)
+            else:
+                aux = 0
+                for f2 in flower_list:
+                    if f2.wasPolin:
+                        aux+=1
+                if aux == len(flower_list):
+                    for b in bees_list:
+                        b.moveToCor(x=190,y=50)
+      
         
 def main():
     pygame.init()
@@ -106,32 +136,8 @@ def main():
             print(event)
             if event.type == pygame.QUIT:
                 running = False
-        aux = True 
-        for f in flower_list:
-            
-            if not f.wasPolin:
-                for b in bees_list:
-                    if not b.isPoli:
-                        if b.flowerSelect is not None:
-                            if b.flowerSelect == f.name:
-                                if b.rect.x == f.rect.x and b.rect.y == f.rect.y:
-                                    b.isPoli = True
-                                    f.wasPolin = True
-                                else:
-                                    b.findAFlower(f)
-                        else:
-                            if not f.isTaked:
-                                b.flowerSelect = f.name
-                                f.isTaked = True
-                            
-                    else:
-                        print("Abeja ya polinizo")
-                        if b.rect.x == 190 and b.rect.y == 50:
-                            b.isPoli = False
-                            b.flowerSelect = None
-                        else:
-                            b.moveToCor(x=190,y=50)
-                        
+                
+        beesPoliAnimation(flower_list, bees_list)
         screen.fill((255,255,255))
 
         screen.blit(background_img, [0,0])
