@@ -1,39 +1,55 @@
-import numpy as np
+from math import gamma, sin
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
 
-# Parámetros físicos
-g = 9.81  # Aceleración gravitatoria (m/s^2)
-omega = 2*np.pi / (24*3600)  # Velocidad angular de la Tierra (rad/s)
+def f (gamma, omega, theta, thetapoint) :
+	"""
+	Fonction correpsondant à l'equation du pendule
+	"""
+	return -gamma*thetapoint-omega*sin(theta)
 
-# Condiciones iniciales
-theta_0 = np.pi / 4  # Ángulo inicial (en radianes)
-theta_dot_0 = 0      # Velocidad angular inicial (en rad/s)
 
-# Función para actualizar la animación en cada fotograma
-def update(frame):
-    global theta, theta_dot
-    theta_dot_dot = - (g / 1) * np.sin(theta)  # Ecuación de movimiento
-    theta_dot += theta_dot_dot * dt
-    theta += theta_dot * dt + 0.5 * theta_dot_dot * dt**2
-    line.set_data([0, np.sin(theta)], [0, -np.cos(theta)])
-    return line,
 
-# Inicialización de la figura y el eje
-fig, ax = plt.subplots()
-ax.set_xlim(-1.5, 1.5)
-ax.set_ylim(-1.5, 1.5)
-ax.set_aspect('equal')
-line, = ax.plot([], [], lw=2)
+def euler(gamma, omega, theta, thetapoint, h, n, tableau_t, tableau_theta, tableau_theta_point) :
+	for _ in range(n) :
+		theta1 = theta+h*thetapoint
+		thetapoint1 = thetapoint+h*f(gamma, omega, theta, thetapoint)
+		theta = theta1
+		thetapoint = thetapoint1
+		tableau_t += [h]
+		tableau_theta += [theta]
+		tableau_theta_point += [thetapoint]
+	return (tableau_theta, tableau_theta_point)
 
-# Configuración de la animación
-dt = 1  # Paso de tiempo (en segundos)
-theta = theta_0
-theta_dot = theta_dot_0
-ani = FuncAnimation(fig, update, frames=np.arange(0, 24*3600, dt), blit=True)
+h=0.1
+n=200
 
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Animación del Péndulo de Foucault')
 
+#entrées
+print("Ecuacion θ\"+ Γθ'+ ω0²sinθ : ")
+print("Entradas: Γ=0.5, ω=1, θ'(0)=0")
+
+gamma=float(input("Introdusca el valor de la friccion Γ : "))
+omega=float(input("Velocidad angular ω : "))
+thetapoint=float(input("Introdusca θ'(0) : "))
+
+
+
+
+#création et paramètrage de la figure
+plt.figure()
+plt.grid(True)
+plt.xlim(-1,4)
+plt.ylim(-2,2)
+plt.xlabel('angle')
+plt.ylabel('dangle')
+
+#cálculo de diferentes curvas según valores theta
+for theta in [0, 0.5, 1, 1.6, 2, 2.5, 3, 3.141592654]:
+	tableau_t = [0]
+	tableau_theta=[theta]
+	tableau_theta_point=[thetapoint]
+	tableau_theta, tableau_theta_point = euler(gamma, omega, theta, thetapoint, h, n, tableau_t, tableau_theta, tableau_theta_point)
+	plt.plot(tableau_theta, tableau_theta_point)
+
+#affichage des courbes
 plt.show()
