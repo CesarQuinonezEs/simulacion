@@ -47,7 +47,11 @@ class Flower(pygame.sprite.Sprite):
             self.wasPolin = False
         else:
             self.wasPolin = True
-
+    
+    def update(self,screen):
+        if self.image is not None:
+            screen.blit(self.image, self.rect)
+            
 class Bee(pygame.sprite.Sprite):
     def __init__(self,name):
         super().__init__()
@@ -88,7 +92,9 @@ class Bee(pygame.sprite.Sprite):
             self.rect.y += 1
         elif self.rect.y > y:
             self.rect.y -= 1
-
+    def update(self,screen):
+        if self.image is not None:
+            screen.blit(self.image, self.rect)
 class Insect(pygame.sprite.Sprite):
     def __init__(self,name):
         super().__init__()
@@ -128,6 +134,10 @@ class Insect(pygame.sprite.Sprite):
             self.rect.y += 1
         elif self.rect.y > y:
             self.rect.y -= 1
+        
+    def update(self,screen):
+        if self.image is not None:
+            screen.blit(self.image, self.rect)
 
 class Inputs():
     def __init__(self,pos, color,font,text_input = '', height = 0, width = 0, isCenter = False, isInput = False, inputColor = 'lightskyblue3'):
@@ -165,53 +175,69 @@ def poliAnimation(flower_list, bees_list,insects_list):
                             insect.flowerSelect = flower_list[i].name
                             flower_list[i].isTaked = True
             
-    
-    for f in flower_list:
-            if not f.wasPolin:
-                if bees_list:
-                    for b in bees_list:
-                        if not b.isPoli:
-                            if b.flowerSelect is not None:
-                                if b.flowerSelect == f.name:
-                                    if b.rect.x == f.rect.x and b.rect.y == f.rect.y:
-                                        b.isPoli = True
-                                        f.wasPolin = True
-                                    else:
-                                        b.findAFlower(f)
+    if flower_list:
+        for f in flower_list:
+                if not f.wasPolin:
+                    if bees_list:
+                        for b in bees_list:
+                            if not b.isPoli:
+                                if b.flowerSelect is not None:
+                                    if b.flowerSelect == f.name:
+                                        if b.rect.x == f.rect.x and b.rect.y == f.rect.y:
+                                            b.isPoli = True
+                                            f.wasPolin = True
+                                        else:
+                                            b.findAFlower(f)
+                                else:
+                                    if not f.isTaked:
+                                        b.flowerSelect = f.name
+                                        f.isTaked = True       
                             else:
-                                if not f.isTaked:
-                                    b.flowerSelect = f.name
-                                    f.isTaked = True       
-                        else:
-                            if b.rect.x == 190 and b.rect.y == 50:
-                                b.isPoli = False
-                                b.flowerSelect = None
+                                if b.rect.x == 190 and b.rect.y == 50:
+                                    b.isPoli = False
+                                    b.flowerSelect = None
+                                else:
+                                    b.moveToCor(x=190,y=50)
+                    if insects_list:
+                        for i in insects_list:
+                            if not i.isPoli:
+                                if i.flowerSelect is not None:
+                                    if i.flowerSelect == f.name:
+                                        if i.rect.x == f.rect.x and i.rect.y == f.rect.y:
+                                            i.isPoli = True
+                                            f.wasPolin = True
+                                        else:
+                                            i.findAFlower(f)
                             else:
-                                b.moveToCor(x=190,y=50)
-                if insects_list:
-                    for i in insects_list:
-                        if not i.isPoli:
-                            if i.flowerSelect is not None:
-                                if i.flowerSelect == f.name:
-                                    if i.rect.x == f.rect.x and i.rect.y == f.rect.y:
-                                        i.isPoli = True
-                                        f.wasPolin = True
-                                    else:
-                                        i.findAFlower(f)
-                        else:
-                            if i.rect.x == 70 and i.rect.y == 470:
-                                i.isPoli = True
-                                i.flowerSelect = None
-                            else:
-                                i.moveToCor(x=70,y=470)
+                                if i.rect.x == 70 and i.rect.y == 470:
+                                    i.isPoli = True
+                                    i.flowerSelect = None
+                                else:
+                                    i.moveToCor(x=70,y=470)
+                else:
+                    aux = 0
+                    for f2 in flower_list:
+                        if f2.wasPolin:
+                            aux+=1
+                    if aux == len(flower_list):
+                        for b in bees_list:
+                            b.moveToCor(x=190,y=50)
+    else:
+        if bees_list:
+            for b in bees_list:
+                if b.rect.x == 190 and b.rect.y == 50:
+                    b.isPoli = False
+                    b.flowerSelect = None
             else:
-                aux = 0
-                for f2 in flower_list:
-                    if f2.wasPolin:
-                        aux+=1
-                if aux == len(flower_list):
-                    for b in bees_list:
-                        b.moveToCor(x=190,y=50)
+                b.moveToCor(x=190,y=50)
+        if insects_list:
+            for i in insects_list:
+                if i.rect.x == 70 and i.rect.y == 470:
+                    i.isPoli = True
+                    i.flowerSelect = None
+                else:
+                    i.moveToCor(x=70,y=470)
+                    
 def setNewDayForPoli(bees_list, insects_list,flower_list):
     if flower_list:
         for flower in flower_list:
@@ -225,13 +251,20 @@ def setNewDayForPoli(bees_list, insects_list,flower_list):
             insect.isPoli = False
 
 def deleteFlower(flower_list):
-    aux = []
-    if flower_list:
-        for i in range(len(flower_list)):
-            if not flower_list[i].wasPolin:
-                aux.append(i)
-        for i in aux:
+    flag = True
+    i = 0
+    poliCount = 0
+    while flag:
+        if flower_list[i].wasPolin:
+            poliCount +=1
+            i += 1
+        else:
             flower_list.pop(i)
+            i = 0
+            poliCount = 0
+            
+        if poliCount == len(flower_list):
+            flag = False
     return flower_list
         
 
@@ -329,7 +362,16 @@ def play(numFlowers,numberBees,numberAnotherInsect):
             button.update(screen)
         for inputText in listInpusts:
             inputText.update(screen)
-        all_sprites.draw(screen)
+        if flower_list:
+            for f in flower_list:
+                f.update(screen)
+        if bees_list:
+            for b in bees_list:
+                b.update(screen)
+        if insects_list:
+            for i in insects_list:
+                i.update(screen)
+        #all_sprites.draw(screen)
 
         #Actualiza pantalla
         pygame.display.flip()
