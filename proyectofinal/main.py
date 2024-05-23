@@ -95,6 +95,11 @@ class Bee(pygame.sprite.Sprite):
     def update(self,screen):
         if self.image is not None:
             screen.blit(self.image, self.rect)
+    def nextDay(self):
+        self.rect.x = 190
+        self.rect.y = 50
+        self.flowerSelect = None
+        self.isPoli = False
 class Insect(pygame.sprite.Sprite):
     def __init__(self,name):
         super().__init__()
@@ -250,21 +255,28 @@ def setNewDayForPoli(bees_list, insects_list,flower_list):
         for insect in insects_list:
             insect.isPoli = False
 
-def deleteFlower(flower_list):
+def deleteFlower(flower_list,season):
     flag = True
     i = 0
     poliCount = 0
-    while flag:
-        if flower_list[i].wasPolin:
-            poliCount +=1
-            i += 1
-        else:
-            flower_list.pop(i)
-            i = 0
-            poliCount = 0
+    if flower_list:
+        
+        while flag:
+            if flower_list[i].wasPolin:
+                poliCount +=1
+                i += 1
+            else:
+                flower_list.pop(i)
+                i = 0
+                poliCount = 0
             
-        if poliCount == len(flower_list):
-            flag = False
+            if poliCount == len(flower_list):
+                flag = False
+        if season == 3:
+            for i in range(int(len(flower_list)/2)):
+                flower_list.pop()
+        elif season == 4:
+             flower_list = []
     return flower_list
         
 
@@ -285,11 +297,21 @@ def bornNewBee(bees_list,day):
         bees_list.append(newBee)
         all_sprites.add(newBee)
     return bees_list
-    
+
+def chageSeason(season, flower_list):
+    if season < 4:
+        season += 1
+    else:
+        season = 1
+        flower = Flower(name= random.randint(1,10000))
+        flower.setRandomFlower()
+        flower_list.append(flower)
+    return season, flower_list
 
 def play(numFlowers,numberBees,numberAnotherInsect):
     font = get_font(11)
     day = 1
+    season = 1
     listInpusts = []
     FLOWERTEXT = Inputs((624,100),RED,font,"Num. Flores",isCenter=True)
     listInpusts.append(FLOWERTEXT)
@@ -307,11 +329,17 @@ def play(numFlowers,numberBees,numberAnotherInsect):
     listInpusts.append(DAYSTEXT)
     DAY_NUM = Inputs((695,190),RED,font,str(day),isInput=True)
     listInpusts.append(DAY_NUM)
-    listButtons = []
+
+    SEASONTEXT = Inputs((624,210),RED,font,"Num. Estacion",isCenter=True)
+    listInpusts.append(SEASONTEXT)
+    SEASON_INPUT= Inputs((695,210),RED,font,str(season),isInput=True)
+    listInpusts.append(SEASON_INPUT)
+    listEventButtons = []
 
     panal_img = pygame.image.load('./assets/panal.png').convert()
     panal_img.set_colorkey([0,0,0])
     running = True
+    flagStart = False
     flower_list = []
     
     bees_list = []
@@ -334,32 +362,57 @@ def play(numFlowers,numberBees,numberAnotherInsect):
         insects_list.append(insect)
         all_sprites.add(insect)
     while running:
-        MOUSE_POS = pygame.mouse.get_pos()
-        NEXTDAY_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(100, 525), 
-                            text_input="Siguiente dia", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
         
-        listButtons.append(NEXTDAY_BUTTON)
+        MOUSE_POS = pygame.mouse.get_pos()
+        NEXTDAY_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(300, 525), 
+                            text_input="Siguiente dia", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
+        SEASON_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(500, 525), 
+                            text_input="cambiar estacion", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
+        INICIAR =  Button(image=pygame.image.load("assets/Play Rect.png"), pos=(100, 525), 
+                            text_input="Iniciar sim", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
+        if not flagStart:
+            INICIAR = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(100, 525), 
+                            text_input="Iniciar sim", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
+        else:
+            INICIAR = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(100, 525), 
+                            text_input="Pausa sim", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
+            
+        listEventButtons.append(NEXTDAY_BUTTON)
+        listEventButtons.append(SEASON_BUTTON)
+        listEventButtons.append(INICIAR)
         for event in pygame.event.get():
             print(event)
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if NEXTDAY_BUTTON.checkForInput(MOUSE_POS):
-                    flower_list = deleteFlower(flower_list)
+                if NEXTDAY_BUTTON.checkForInput(MOUSE_POS) and INICIAR:
+                    flower_list = deleteFlower(flower_list,season)
                     flower_list = makeNewFlower(flower_list)
+                    for bee in bees_list:
+                        bee.nextDay()
                     setNewDayForPoli(bees_list=bees_list, insects_list=insects_list, flower_list=flower_list)
                     bees_list = bornNewBee(bees_list=bees_list,day=day)
                     day +=1
                     FLOWER_NUM.text_input = str(len(flower_list))
                     DAY_NUM.text_input = str(day)
-        poliAnimation(flower_list, bees_list,insects_list)
+                    SEASON_INPUT.text_input = str(season)
+                if SEASON_BUTTON.checkForInput(MOUSE_POS):
+                    season,flower_list = chageSeason(season,flower_list)
+                if INICIAR.checkForInput(MOUSE_POS):
+                    flagStart = not flagStart
+                
+        if flagStart:
+            if season < 4:
+                poliAnimation(flower_list, bees_list,insects_list)
+        
         screen.fill("black")
         
         screen.blit(background_img, [0,0])
         screen.blit(panal_img,[190, 50])
-        for button in [NEXTDAY_BUTTON]:
+        for button in listEventButtons:
             button.changeColor(MOUSE_POS)
             button.update(screen)
+
         for inputText in listInpusts:
             inputText.update(screen)
         if flower_list:
