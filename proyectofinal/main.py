@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 import pygame, sys
 import os
 import random
@@ -21,6 +22,9 @@ otherPolinInput = ''
 input_rect = pygame.Rect(200,200,142,32)
 input_color = pygame.Color('lightskyblue3')
 all_sprites = pygame.sprite.Group()
+floresPorDia = []
+abejasPorDias = []
+daysSerie = []
 def get_font(size):
     return pygame.font.Font('./assets/font.ttf',size=size)
 
@@ -34,7 +38,7 @@ class Flower(pygame.sprite.Sprite):
         self.wasPolin = False
         self.isTaked = False
         self.name = name
-
+        self.isPoison = False
     def setRandomFlower(self):
         #220490430623
         self.rect.x = random.randrange(220,623,32)
@@ -61,6 +65,7 @@ class Bee(pygame.sprite.Sprite):
         self.isPoli = False
         self.name = name
         self.flowerSelect = None
+        self.lifePoints = 3
     def changeIsPoli(self):
         if self.isPoli:
             self.isPoli = False
@@ -189,8 +194,11 @@ def poliAnimation(flower_list, bees_list,insects_list):
                                 if b.flowerSelect is not None:
                                     if b.flowerSelect == f.name:
                                         if b.rect.x == f.rect.x and b.rect.y == f.rect.y:
+                                            if f.isPoison:
+                                                b.lifePoints = 0 
                                             b.isPoli = True
                                             f.wasPolin = True
+                                            
                                         else:
                                             b.findAFlower(f)
                                 else:
@@ -258,19 +266,19 @@ def setNewDayForPoli(bees_list, insects_list,flower_list):
 def deleteFlower(flower_list,season):
     flag = True
     i = 0
-    poliCount = 0
+
     if flower_list:
         
         while flag:
             if flower_list[i].wasPolin:
-                poliCount +=1
+
                 i += 1
             else:
                 flower_list.pop(i)
                 i = 0
-                poliCount = 0
+
             
-            if poliCount == len(flower_list):
+            if i == len(flower_list):
                 flag = False
         if season == 3:
             for i in range(int(len(flower_list)/2)):
@@ -292,10 +300,15 @@ def makeNewFlower(flower_list):
     return flower_listAux
 
 def bornNewBee(bees_list,day):
-    if day % 12 ==0:
-        newBee = Bee(name=len(bees_list))
-        bees_list.append(newBee)
-        all_sprites.add(newBee)
+    if day % 2 ==0:
+        aux2 = len(bees_list)
+        for i in range(aux2):
+            newBee = Bee(name=len(bees_list)+1)
+            newBee.rect.x = 190
+            newBee.rect.y = 50
+            newBee.lifePoints = random.randint(a=3, b=6)
+            bees_list.append(newBee)
+            all_sprites.add(newBee)
     return bees_list
 
 def chageSeason(season, flower_list):
@@ -307,7 +320,77 @@ def chageSeason(season, flower_list):
         flower.setRandomFlower()
         flower_list.append(flower)
     return season, flower_list
+def getPoisonFlowers(flower_list):
+    if flower_list:
+        rand = random.randint(1,len(flower_list))
+        for i in range(0,rand):
+            flower_list[i].isPoison = True
+    return flower_list
+def changePoison(fl,days):
+    if fl:
+        if days % 3 == 0:
+            for f in fl:
+                f.isPoison = False
+    return fl
+def checkForbeesDeath(bees_list):
+    i = 0
+    flag = True
+    if bees_list:
+        while flag:
+            if bees_list[i].lifePoints == 0:
+                bees_list.pop(i)
+                i = 0
+            else:
+                i+=1
+            
+            if i == len(bees_list):
+                flag = False
+    
+    return bees_list
+def makeHis():
+    if floresPorDia and abejasPorDias:
+        plt.figure(figsize=(10, 5))
+        plt.plot(daysSerie, floresPorDia, label='Flores', marker='o')
+        plt.plot(daysSerie, abejasPorDias, label='Abejas', marker='x')
+        plt.title('Gráfica de Serie de Tiempo')
+        plt.xlabel('Dias')
+        plt.ylabel('Cantidad')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
+def lifeBees(bees_list):
+    if bees_list:
+        for bee in bees_list:
+            bee.lifePoints -= 1
+    return bees_list
+def deleteBees(bees_list):
+    if bees_list:
+        flag = True
+        i = 0
+        while flag:
+            if bees_list[i].lifePoints > 0:
+
+                i += 1
+            else:
+                bees_list.pop(i)
+                i = 0
+
+            
+            if i == len(bees_list):
+                flag = False
+    return bees_list
+def checkForDay(bees_list,flower_list,day):
+    if flower_list:
+        floresPorDia.append(len(flower_list))
+    else:
+        floresPorDia.append(0)
+    if bees_list:
+        abejasPorDias.append(len(bees_list))
+    else:
+        abejasPorDias.append(0)
+    
+    daysSerie.append(str(day))
 def play(numFlowers,numberBees,numberAnotherInsect):
     font = get_font(11)
     day = 1
@@ -348,11 +431,12 @@ def play(numFlowers,numberBees,numberAnotherInsect):
         flower = Flower(name= i + random.randint(1,10000))
         flower.setRandomFlower()
         flower_list.append(flower)
-        all_sprites.add(flower)
+        all_sprites.add(flower) 
     for i in range(numberBees):
         bee = Bee(name=i)
         bee.rect.x = 190
         bee.rect.y = 50
+        bee.lifePoints = random.randint(a=3, b=6)
         bees_list.append(bee)
         all_sprites.add(bee)
     for i in range(numberAnotherInsect):
@@ -366,7 +450,7 @@ def play(numFlowers,numberBees,numberAnotherInsect):
         MOUSE_POS = pygame.mouse.get_pos()
         NEXTDAY_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(300, 525), 
                             text_input="Siguiente dia", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
-        SEASON_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(500, 525), 
+        SEASON_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(300, 625), 
                             text_input="cambiar estacion", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
         INICIAR =  Button(image=pygame.image.load("assets/Play Rect.png"), pos=(100, 525), 
                             text_input="Iniciar sim", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
@@ -376,36 +460,52 @@ def play(numFlowers,numberBees,numberAnotherInsect):
         else:
             INICIAR = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(100, 525), 
                             text_input="Pausa sim", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
-            
+        FUMIGAR = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(100, 625), 
+                            text_input="Fumigar", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
+        TERMINAR = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(500, 525), 
+                            text_input="Terminar sim.", font=get_font(11), base_color="#d7fcd4", hovering_color="White")
         listEventButtons.append(NEXTDAY_BUTTON)
         listEventButtons.append(SEASON_BUTTON)
         listEventButtons.append(INICIAR)
+        listEventButtons.append(FUMIGAR)
+        listEventButtons.append(TERMINAR)
         for event in pygame.event.get():
-            print(event)
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if NEXTDAY_BUTTON.checkForInput(MOUSE_POS) and INICIAR:
                     flower_list = deleteFlower(flower_list,season)
                     flower_list = makeNewFlower(flower_list)
+                    checkForDay(bees_list,flower_list,day)
                     for bee in bees_list:
                         bee.nextDay()
                     setNewDayForPoli(bees_list=bees_list, insects_list=insects_list, flower_list=flower_list)
+                    
+                    bees_list = deleteBees(bees_list)
+                    bees_list = lifeBees(bees_list)
                     bees_list = bornNewBee(bees_list=bees_list,day=day)
+                    print(len(bees_list))
                     day +=1
+                    BEE_NUM.text_input = str(len(bees_list))
                     FLOWER_NUM.text_input = str(len(flower_list))
                     DAY_NUM.text_input = str(day)
                     SEASON_INPUT.text_input = str(season)
+                    flower_list = changePoison(flower_list,days=day)
                 if SEASON_BUTTON.checkForInput(MOUSE_POS):
                     season,flower_list = chageSeason(season,flower_list)
                 if INICIAR.checkForInput(MOUSE_POS):
                     flagStart = not flagStart
-                
+                if FUMIGAR.checkForInput(MOUSE_POS):
+                    flower_list = getPoisonFlowers(flower_list)
+                if TERMINAR.checkForInput(MOUSE_POS):
+                    makeHis()
+                    sys.exit()
+        screen.fill("black")
         if flagStart:
             if season < 4:
                 poliAnimation(flower_list, bees_list,insects_list)
+                
         
-        screen.fill("black")
         
         screen.blit(background_img, [0,0])
         screen.blit(panal_img,[190, 50])
@@ -424,11 +524,8 @@ def play(numFlowers,numberBees,numberAnotherInsect):
         if insects_list:
             for i in insects_list:
                 i.update(screen)
-        #all_sprites.draw(screen)
-
-        #Actualiza pantalla
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(120)
     sys.exit()
 def middleware(numFlowers, numberBees, numberAnotherInsect):
     if  numFlowers:
@@ -468,7 +565,6 @@ def form():
         BACK_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(150, 430), 
                             text_input="Atras", font=get_font(12), base_color="#d7fcd4", hovering_color="White")
         for event in pygame.event.get():
-            print(event)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
@@ -493,7 +589,6 @@ def form():
                     main_menu()
                                 
             if flowerInputText.isModiText:
-                print("entre a este if")
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
                         if flowerInputText.text_input:
